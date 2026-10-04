@@ -1,3 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NACHAS STYLISH CONNECT</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+body{background:#0a0a0a;color:#fff}
+header{padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #222;position:sticky;top:0;background:#0a0a0a;z-index:10}
+.logo{font-weight:900;letter-spacing:4px}
+nav a{color:#888;text-decoration:none;margin-left:12px;font-size:13px}
+.hero{padding:60px 18px;text-align:center}
+.hero h1{font-size:42px;letter-spacing:6px}
+.hero p{color:#888;margin:14px 0}
+.btn{background:#fff;color:#000;padding:12px 22px;border-radius:24px;text-decoration:none;font-weight:800;display:inline-block;margin-top:12px}
+section{padding:40px 18px;max-width:1100px;margin:0 auto}
+.fbtn{padding:8px 16px;border-radius:20px;border:1px solid #222;background:#111;color:#fff;cursor:pointer;margin:4px}
+.fbtn.active{background:#fff;color:#000}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:18px}
+.prod{background:#151515;border:1px solid #222;border-radius:16px;overflow:hidden}
+.prod img{width:100%;height:180px;object-fit:cover;background:#222}
+.info{padding:12px}
+.badge{font-size:10px;padding:4px 8px;border-radius:10px;background:#25D366;color:#000;font-weight:800}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">NACHAS</div>
+<nav><a href="#collection">Collection</a><a href="collection-admin.html" style="background:#222;padding:6px 10px;border-radius:14px;color:#fff">Edit ✏️</a><a href="https://wa.me/250780078191">WhatsApp</a></nav>
+</header>
+<div class="hero"><h1>STYLISH CONNECT</h1><p>Street Wear • Phones • Watches • Kigali Prices</p><a class="btn" href="#collection">Explore Collection</a></div>
+<section id="collection">
+<h2 style="letter-spacing:3px;text-align:center">EXPLORE COLLECTION</h2>
+<p style="text-align:center;color:#888;font-size:12px;margin:8px 0 16px">8 Products • Your new prices</p>
+<div style="display:flex;flex-wrap:wrap;justify-content:center;margin-bottom:10px">
+<button onclick="filterCol('all')" class="fbtn active" id="b-all">All</button>
+<button onclick="filterCol('Phone')" class="fbtn" id="b-Phone">Phones</button>
+<button onclick="filterCol('Watch')" class="fbtn" id="b-Watch">Watches</button>
+<button onclick="filterCol('T-Shirt')" class="fbtn" id="b-T-Shirt">Tees</button>
+<button onclick="filterCol('Hoodie')" class="fbtn" id="b-Hoodie">Hoodies</button>
+</div>
+<div class="grid" id="colGrid"></div>
+</section>
+<script>
 const defaultProducts=[
 {"id":"NCH-TEE-01","name":"Classic Street Tee","cat":"T-Shirt","price":10000,"stock":20,"img":"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400"},
 {"id":"NCH-HOD-02","name":"NACHAS Hoodie","cat":"Hoodie","price":15000,"stock":15,"img":"https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400"},
@@ -8,3 +53,10 @@ const defaultProducts=[
 {"id":"NCH-PH-007","name":"iPhone 13 128GB","cat":"Phone","price":590000,"stock":3,"img":"https://images.unsplash.com/photo-1632661674596-df8be070a5c5?w=400"},
 {"id":"NCH-PH-009","name":"iPhone 15 128GB","cat":"Phone","price":950000,"stock":3,"img":"https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400"}
 ];
+function getCol(){let s=localStorage.getItem('nachas_collection');if(s){try{let a=JSON.parse(s);let c=a.filter(p=>p.name!=='New Product'&&p.id!=='NCH-NEW');if(c.length>0)return c;}catch(e){}}return defaultProducts;}
+function renderCol(f='all'){let p=getCol();let h='';p.filter(x=>f==='all'||x.cat===f).forEach(o=>{let i=o.img||`https://via.placeholder.com/400?text=${encodeURIComponent(o.name)}`;h+=`<div class="prod"><img src="${i}"><div class="info"><h4 style="font-size:13px">${o.name}</h4><p style="color:#888;font-size:10px;margin:4px 0">${o.cat} • ${o.id}</p><div style="display:flex;justify-content:space-between;margin-top:8px"><span style="font-weight:800">${o.price.toLocaleString()} RWF</span><span class="badge">In Stock</span></div><a href="https://wa.me/250780078191?text=Hello NACHAS, I want ${encodeURIComponent(o.name)}" style="display:block;margin-top:10px;background:#fff;color:#000;text-align:center;padding:9px;border-radius:20px;text-decoration:none;font-weight:800;font-size:11px">Order</a></div></div>`;});document.getElementById('colGrid').innerHTML=h;}
+function filterCol(c){document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));let b=document.getElementById('b-'+c);if(b)b.classList.add('active');renderCol(c);}
+renderCol();
+</script>
+</body>
+</html>
