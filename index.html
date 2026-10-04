@@ -1,2 +1,150 @@
-// Read from admin if exists
-let nachasProducts = JSON.parse(localStorage.getItem('nachas_collection')||'null') || defaultProducts;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>NACHAS - Edit Collection</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+body{background:#0a0a0a;color:#fff;padding:16px}
+.lock{height:100vh;display:flex;justify-content:center;align-items:center}
+.box{background:#151515;border:1px solid #222;padding:28px;border-radius:20px;width:100%;max-width:360px;text-align:center}
+.box input{width:100%;padding:14px;margin:16px 0;border-radius:12px;border:1px solid #333;background:#000;color:#fff;text-align:center;font-size:22px;letter-spacing:8px}
+.btn{background:#fff;color:#000;padding:12px 20px;border-radius:24px;border:none;font-weight:800;width:100%;cursor:pointer}
+.admin{display:none;max-width:900px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.card{background:#151515;border:1px solid #222;border-radius:16px;padding:14px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card input,.card select{width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#000;color:#fff}
+.card.full{grid-column:1/3}
+.del{background:#ff3333;color:#fff;border:none;padding:8px 12px;border-radius:10px;cursor:pointer}
+.saveBar{position:sticky;bottom:0;background:#0a0a0a;padding:12px;border-top:1px solid #222;display:flex;gap:10px}
+</style>
+</head>
+<body>
+<div id="lock" class="lock">
+<div class="box">
+<h1>NACHAS ADMIN</h1>
+<p style="color:#888;font-size:13px">Edit Collection Prices</p>
+<input id="pin" type="password" placeholder="••••" maxlength="4" inputmode="numeric">
+<button class="btn" onclick="unlock()">UNLOCK</button>
+<p id="err" style="color:#ff5555;display:none;margin-top:10px">Wrong PIN</p>
+</div>
+</div>
+
+<div id="admin" class="admin">
+<div class="top">
+<h2>EDIT COLLECTION</h2>
+<div style="display:flex;gap:8px">
+<button onclick="lock()" style="background:#222;color:#fff;border:none;padding:8px 14px;border-radius:20px">Lock</button>
+<a href="index.html" style="background:#fff;color:#000;padding:8px 14px;border-radius:20px;text-decoration:none;font-size:12px">View Shop</a>
+</div>
+</div>
+
+<div style="background:#111;border:1px dashed #333;padding:12px;border-radius:12px;font-size:11px;color:#888;margin-bottom:16px">
+🔒 Private: Changes save ONLY on this phone (localStorage). To show on website for all customers, you must also update index.html or export. PIN 0780
+</div>
+
+<div id="list"></div>
+
+<button class="btn" style="background:#25D366;color:#000;margin:16px 0" onclick="addNew()">+ ADD NEW PRODUCT</button>
+
+<div class="saveBar">
+<button class="btn" onclick="saveAll()">💾 SAVE ALL</button>
+<button class="btn" style="background:#222;color:#fff" onclick="exportJSON()">Export JSON</button>
+</div>
+</div>
+
+<script>
+const PIN="0780";
+const defaultProducts=[
+{id:"NCH-TEE-01",name:"Classic Street Tee",cat:"T-Shirt",price:15000,stock:20,img:""},
+{id:"NCH-HOD-02",name:"NACHAS Hoodie",cat:"Hoodie",price:35000,stock:15,img:""},
+{id:"NCH-PH-010",name:"iPhone 15 Pro Max 256GB",cat:"Phone",price:1275000,stock:2,img:""},
+{id:"NCH-PH-004",name:"Pixel 4A 128GB",cat:"Phone",price:190000,stock:3,img:""},
+{id:"NCH-WA-011",name:"Apple Watch Series 5",cat:"Watch",price:275000,stock:5,img:""},
+{id:"NCH-PH-003",name:"Tecno Spark 40 256GB",cat:"Phone",price:195000,stock:4,img:""},
+];
+
+function getProducts(){
+ let p=JSON.parse(localStorage.getItem('nachas_collection')||'null');
+ if(!p){p=defaultProducts; localStorage.setItem('nachas_collection', JSON.stringify(p));}
+ return p;
+}
+function unlock(){
+ if(document.getElementById('pin').value===PIN){
+  document.getElementById('lock').style.display='none';
+  document.getElementById('admin').style.display='block';
+  render();
+ } else {document.getElementById('err').style.display='block';}
+}
+function lock(){document.getElementById('admin').style.display='none';document.getElementById('lock').style.display='flex';document.getElementById('pin').value='';}
+
+function render(){
+ let products=getProducts();
+ let html='';
+ products.forEach((pr,i)=>{
+  html+=`<div class="card" id="card-${i}">
+  <input class="full" placeholder="Product Name" value="${pr.name}" id="name-${i}">
+  <input type="number" placeholder="Price RWF" value="${pr.price}" id="price-${i}">
+  <input type="number" placeholder="Stock" value="${pr.stock}" id="stock-${i}">
+  <select id="cat-${i}">
+   <option ${pr.cat==='T-Shirt'?'selected':''}>T-Shirt</option>
+   <option ${pr.cat==='Hoodie'?'selected':''}>Hoodie</option>
+   <option ${pr.cat==='Phone'?'selected':''}>Phone</option>
+   <option ${pr.cat==='Watch'?'selected':''}>Watch</option>
+   <option ${pr.cat==='Jacket'?'selected':''}>Jacket</option>
+   <option ${pr.cat==='Pants'?'selected':''}>Pants</option>
+   <option ${pr.cat==='Cap'?'selected':''}>Cap</option>
+   <option ${pr.cat==='Dress'?'selected':''}>Dress</option>
+  </select>
+  <input placeholder="ID (e.g. NCH-PH-010)" value="${pr.id}" id="id-${i}">
+  <input class="full" placeholder="Image link (or leave empty)" value="${pr.img||''}" id="img-${i}">
+  <button class="del full" onclick="delProd(${i})">Delete This Product</button>
+  </div>`;
+ });
+ document.getElementById('list').innerHTML=html;
+}
+
+function addNew(){
+ let products=getProducts();
+ products.push({id:"NCH-NEW",name:"New Product",cat:"Phone",price:100000,stock:1,img:""});
+ localStorage.setItem('nachas_collection', JSON.stringify(products));
+ render();
+}
+
+function delProd(i){
+ if(!confirm('Delete this product?')) return;
+ let products=getProducts();
+ products.splice(i,1);
+ localStorage.setItem('nachas_collection', JSON.stringify(products));
+ render();
+}
+
+function saveAll(){
+ let products=getProducts();
+ let updated=[];
+ for(let i=0;i<products.length;i++){
+  updated.push({
+   id:document.getElementById(`id-${i}`).value,
+   name:document.getElementById(`name-${i}`).value,
+   cat:document.getElementById(`cat-${i}`).value,
+   price:parseInt(document.getElementById(`price-${i}`).value)||0,
+   stock:parseInt(document.getElementById(`stock-${i}`).value)||0,
+   img:document.getElementById(`img-${i}`).value
+  });
+ }
+ localStorage.setItem('nachas_collection', JSON.stringify(updated));
+ alert('Saved! '+updated.length+' products. Now view shop at index.html - it will read same data.');
+}
+
+function exportJSON(){
+ let products=getProducts();
+ let dataStr=JSON.stringify(products, null, 2);
+ let blob=new Blob([dataStr],{type:"application/json"});
+ let url=URL.createObjectURL(blob);
+ let a=document.createElement('a'); a.href=url; a.download='nachas-collection.json'; a.click();
+}
+</script>
+</body>
+</html>
